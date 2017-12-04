@@ -1,67 +1,69 @@
-class Student:
-    fd = 0
-    sd = 0
-    td = 0
+# Для поступления в вуз абитуриент должен предъявить результаты трех экзаменов в виде ЕГЭ, каждый из них оценивается целым числом от 0 до 100 баллов. При этом абитуриенты, набравшие менее 40 баллов (неудовлетворительную оценку) по любому экзамену из конкурса выбывают. Остальные абитуриенты участвуют в конкурсе по сумме баллов за три экзамена.
+#
+# В конкурсе участвует N человек, при этом количество мест равно K. Определите проходной балл, то есть такое количество баллов, что количество участников, набравших столько или больше баллов не превосходит K, а при добавлении к ним абитуриентов, набравших наибольшее количество баллов среди непринятых абитуриентов, общее число принятых абитуриентов станет больше K.
+#
+# Формат ввода
+#
+# Программа получает на вход количество мест K. Далее идут строки с информацией об абитуриентах, каждая из которых состоит из имени (текстовая строка содержащая произвольное число пробелов) и трех чисел от 0 до 100, разделенных пробелами.
+#
+# Используйте для ввода файл input.txt с указанием кодировки utf8.
+#
+# Формат вывода
+#
+# Программа должна вывести проходной балл в конкурсе. Выведенное значение должно быть минимальным баллом, который набрал абитуриент, прошедший по конкурсу.
+#
+# Также возможны две ситуации, когда проходной балл не определен.
+#
+# Если будут зачислены все абитуриенты, не имеющие неудовлетворительных оценок, программа должна вывести число 0.
+#
+# Если количество абитуриентов, имеющих равный максимальный балл больше чем K, программа должна вывести число 1.
+#
+# Используйте для вывода файл output.txt с указанием кодировки utf8.
 
-    def total_points(self):
-        return self.fd + self.sd + self.td
 
-    def is_suitable(self):
-        return (self.fd >= 40) and (self.sd >= 40) and (self.td >= 40)
+def bal_sum(z):
+    a = z.split()[-3:]
+    z = 0
+    for d in a:
+        if int(d) < 40:
+            z = 0
+            break
+        else:
+            z += int(d)
+    return z
 
 
-inFile = open('input.txt', encoding='utf8')
-outFile = open('output.txt', 'w')
+in_file = open('input.txt', encoding='utf8')
 
+points = []
 budgetPlaces = 0
 flag = 0
-students = []
 
-for line in inFile:
+for s in in_file:
     if flag == 0:
-        budgetPlaces = int(line)
-        flag = 1
+        budgetPlaces = int(s)  # к-во мест
     else:
-        a = line.split()
-        st = Student()
-        st.fd = int(a[-3])
-        st.sd = int(a[-2])
-        st.td = int(a[-1])
-        students.append(st)
+        b = bal_sum(s)
+        if b != 0:
+            points.append(b)
+    flag += 1
 
-inFile.close()
+points = sorted(points, reverse=True)
 
-students.sort(key=lambda x: -x.total_points())
+in_file.close()
 
-budgetPlacesLeft = budgetPlaces
-passPoints = 0
-res = -1
+out_file = open('output.txt', 'w')
 
-maximum = 0
-prevMax = 0
+res = str()
+if len(points) <= budgetPlaces:
+    res = str(0)
+elif points[budgetPlaces] == points[0]:
+    res = str(1)
+else:
+    for j in points[budgetPlaces - 1::-1]:
+        if j != points[budgetPlaces]:
+            res = str(j)
+            break
 
-for i in students:
-    if budgetPlacesLeft > 0:
-        if i.is_suitable():
-            if i.total_points() > maximum:
-                maximum = i.total_points()
-            prevMax = passPoints
-            passPoints = i.total_points()
-            res = passPoints
-            budgetPlacesLeft -= 1
-
-    elif budgetPlacesLeft == 0:
-        if i.is_suitable() and i.total_points() == passPoints:
-            if maximum == i.total_points():
-                res = 1
-            else:
-                res = prevMax
-        break
-
-
-if res == 120:
-    res = 0
-
-print(res, file=outFile)
-
-outFile.close()
+print(res, file=out_file)
+out_file.close()
